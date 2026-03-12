@@ -7,6 +7,7 @@ import os as _os
 import subprocess as _subprocess
 import random as _random
 class Time:
+    @staticmethod
     def random_time(method=12, with_sec=True):
         if method == 12:
             hours = list(range(1, 13))
@@ -34,6 +35,7 @@ class Time:
         result = Time.convert_to_iterable_and_int(time_str)
         return (result[0]*3600) + (result[1]*60) + result[2]
 class Other:
+    @staticmethod
     def copy_pypower(path):
         """Copy the contents of pypower.py to the clipboard."""
         with open(path, 'r', encoding='utf-8') as f:
@@ -54,7 +56,8 @@ don't write repeated name."""
             a = _threading.Thread(name=name, target=v, daemon=True)
             a.start()
 class Apps:
-    def create_app(path, icon=None):
+    @staticmethod
+    def create_app(path, icon=None, move_to_folder=None):
         """Build a standalone .exe from a .py file using PyInstaller, then clean up build files."""
         def mainloop():
             if not _os.path.exists(path):
@@ -77,9 +80,15 @@ class Apps:
                     _os.system('rmdir /s /q build')
                     _os.remove(n_spec)
                 if _os.path.exists(path.replace('.py', '.exe')):
-                    print(f"App Created Successed in {path.replace('.py', '.exe')}")
+                    if move_to_folder:
+                        new = _os.path.join(move_to_folder, n_exe)
+                        _os.replace(path.replace('.py', '.exe'), new)
+                    else:
+                        new = path.replace('.py', '.exe')
+                    print(f"App Created Successed in {new}")
         Other.in_bg('create app loading ...', 1, mainloop)
 class Files:
+    @staticmethod
     def make_if_not_exists(path, type=''):
         """Create a folder (type='') or empty file at path if it doesn't exist."""
         if not _os.path.exists(path):
@@ -99,7 +108,17 @@ class Files:
             new_text = old_text + '\n' + text
             b.write(new_text.replace('\n\n', '\n'))
 class GUI:
+    @staticmethod
     class CustomTk:
+        def translate_app(master, src, to):
+            from deep_translator import GoogleTranslator
+            tr = GoogleTranslator(source=src, target=to)
+            for i in GUI.CustomTk.all_objects(master):
+                try:
+                    translated = tr.translate(i.cget('text'))
+                    i.configure(text=translated)
+                except:
+                    pass
         def double_clk_copy_label(label):
             def co(e):
                 _pyperclip.copy(label.cget('text'))
@@ -226,27 +245,26 @@ class GUI:
                 for i in widgets:
                     i.configure(width=max(width), height=max(height))
             Other.in_bg('good size', 0, m)
-        def tidy_up(widgets, per_row, start_from_row=0, start_from_column=0, distance_down=5, distance_across=5):
+        def tidy_up(widgets, per_row, start_row=0, start_column=0, padx=5, pady=5):
             master = widgets[0].master
             def m():
                 """
                 Arrange widgets in a grid with a fixed number per row.
                 """
-                for i in range(start_from_row+1):
+                for i in range(start_row+1):
                     master.grid_rowconfigure(i, minsize=widgets[0].winfo_reqheight())
-                for i in range(start_from_column+1):
+                for i in range(start_column+1):
                     master.grid_columnconfigure(i, minsize=widgets[0].winfo_reqwidth())
-                columns = start_from_column
-                rows = start_from_row
+                columns = start_column
                 allowed_num = 0
                 multy = Math.number_multiplies(per_row, len(widgets), set)
                 for w in widgets:
-                    w.grid(column=columns, row=rows, padx=distance_across, pady=distance_down)
+                    w.grid(column=columns, row=start_row, padx=padx, pady=pady)
                     allowed_num += 1
                     columns += 1
                     if allowed_num in multy:
-                        rows += 1
-                        columns = start_from_column
+                        start_row += 1
+                        columns = start_column
             master.after(len(widgets) // 1000, m)
         def all_objects(master):
             """Return a flat list of all child widgets in master."""
@@ -349,14 +367,15 @@ class String:
             else:
                 result += i
         return result
-    def between(self, c1, c2, include_c1_c2=True):
+    def between(self, c1, c2):
         """return string between two points"""
-        index = [self.text.index(c1), self.text.index(c2)]
-        if not include_c1_c2:
-            index[0] = index[0]+ 1
-            index[1] = index[1] - 1
-        return self.text[index[0]:index[1]]
+        result = []
+        index = [Iterable.indexes(self.text, c1), Iterable.indexes(self.text, c2)]
+        for i, e in zip(index[0], index[1]):
+            result.append(self.text[i:e+1])
+        return result
 class Iterable:
+    @staticmethod
     def search_iterable(iterable, search_with, ignore_case=True):
         result = []
         for o in iterable:
@@ -389,9 +408,8 @@ class Iterable:
         for i in range(len(iterable)):
             result += f"{i+1}. {iterable[i]}\n"
         return result.strip()
-    def return_brakets():
-        """return the brakets in a dict"""
-        return {'list': ('[', ']'), 'tuple':('(', ')'), 'curley': ('{', '}')}
+    def indexes(iterable, obj):
+        return [i for i in range(len(iterable)) if iterable[i] == obj]
     def replace_iterable(iterable, index, new_obj=None):
         """replace an object by it's index with new_obj ex:    replace(['mike', 'mark'], 1, 'Olivia')
 result = ['Olivia', 'mark']"""
@@ -423,6 +441,7 @@ result = ['Olivia', 'mark']"""
             result += f"{i}: {dec[i]}\n"
         return result.strip()
 class Math:
+    @staticmethod
     def int_or_float(num):
         try:
             num = str(num).strip()
