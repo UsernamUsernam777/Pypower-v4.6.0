@@ -313,6 +313,7 @@ class GUI:
             else:
                 inf = _ctk.CTkLabel(widget.master, text=information, font=(font, size), fg_color='transparent')
             inf.lift()
+            widget.bind('<Leave>', lambda e: inf.place_forget())
             def show(e):
                 x = widget.winfo_x()
                 y = widget.winfo_y()
