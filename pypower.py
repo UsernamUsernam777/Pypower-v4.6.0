@@ -269,7 +269,6 @@ class GUI:
         def tidy_up(widgets, per_row, start_row=0, start_column=0, padx=5, pady=5):
             master = widgets[0].master
             def m():
-                nonlocal start_row
                 """
                 Arrange widgets in a grid with a fixed number per row.
                 """
@@ -278,10 +277,11 @@ class GUI:
                 for i in range(start_column+1):
                     master.grid_columnconfigure(i, minsize=widgets[0].winfo_reqwidth())
                 columns = start_column
+                rows = start_row
                 allowed_num = 0
                 multy = range(per_row, len(widgets)+1, per_row)
                 for w in widgets:
-                    w.grid(column=columns, row=start_row, padx=padx, pady=pady)
+                    w.grid(column=columns, row=rows, padx=padx, pady=pady)
                     allowed_num += 1
                     columns += 1
                     if allowed_num in multy:
